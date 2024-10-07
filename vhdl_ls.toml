@@ -1,0 +1,6 @@
+[libraries]
+
+# Defines library lib2
+lib.files = [
+  '*.vhd'
+]
