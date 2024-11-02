@@ -7,13 +7,13 @@ USE ieee.std_logic_unsigned.ALL;
 ENTITY SimpleC_Meter IS
     PORT (
         RESET : IN STD_LOGIC;
-        CLK_IN_27M : IN STD_LOGIC;
-        CLK_OUT_27M : OUT STD_LOGIC;
-        CLK_OUT : OUT STD_LOGIC;
-        CLK_OUTD : OUT STD_LOGIC;
+        CLK_IN_27M : IN STD_LOGIC; -- 27MHz clock input
+        CLK_OUT_27M : OUT STD_LOGIC; -- 27MHz clock output
+        CLK_OUT : OUT STD_LOGIC; -- 50MHz clock output
+        CLK_OUTD : OUT STD_LOGIC; -- 1MHz clock output
         LED : OUT STD_LOGIC_VECTOR(5 DOWNTO 0);
-        CHARGE_TRIGGER : OUT STD_LOGIC;
-        DISCHARGE_TRIGGER : OUT STD_LOGIC
+        CHARGE_TRIGGER : OUT STD_LOGIC; -- Charge trigger to RC circuit
+        DISCHARGE_TRIGGER : OUT STD_LOGIC -- Discharge trigger to RC circuit
     );
 END ENTITY SimpleC_Meter;
 
