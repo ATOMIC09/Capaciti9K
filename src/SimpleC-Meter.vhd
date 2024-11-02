@@ -13,7 +13,9 @@ ENTITY SimpleC_Meter IS
         CLK_OUTD : OUT STD_LOGIC; -- 1MHz clock output
         LED : OUT STD_LOGIC_VECTOR(5 DOWNTO 0);
         CHARGE_TRIGGER : OUT STD_LOGIC; -- Charge trigger to RC circuit
-        DISCHARGE_TRIGGER : OUT STD_LOGIC -- Discharge trigger to RC circuit
+        DISCHARGE_TRIGGER : OUT STD_LOGIC; -- Discharge trigger to RC circuit
+        DIGIT1, DIGIT2, DIGIT3, DIGIT4 : OUT STD_LOGIC;
+        A, B, C, D, E, F, G, DP : OUT STD_LOGIC
     );
 END ENTITY SimpleC_Meter;
 
@@ -44,6 +46,16 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
         );
     END COMPONENT;
 
+    COMPONENT SevenSegmentDisplay
+        PORT (
+            clk : IN STD_LOGIC;
+            input_int : IN INTEGER RANGE 0 TO 9999;
+            decimal_point : IN INTEGER RANGE 0 TO 3;
+            digit1, digit2, digit3, digit4 : OUT STD_LOGIC;
+            a, b, c, d, e, f, g, dp : OUT STD_LOGIC
+        );
+    END COMPONENT;
+
 BEGIN
     gowin_pll1 : Gowin_rPLL
     PORT MAP(
@@ -63,6 +75,25 @@ BEGIN
         CLK_50M => clk_out_pll,
         CHARGE => CHARGE_TRIGGER,
         DISCHARGE => DISCHARGE_TRIGGER
+    );
+
+    seven_segment : SevenSegmentDisplay
+    PORT MAP(
+        clk => clk_outd_pll,
+        input_int => 2567,
+        decimal_point => 2,
+        digit1 => DIGIT1,
+        digit2 => DIGIT2,
+        digit3 => DIGIT3,
+        digit4 => DIGIT4,
+        a => A,
+        b => B,
+        c => C,
+        d => D,
+        e => E,
+        f => F,
+        g => G,
+        dp => DP
     );
 
     CLK_OUT <= clk_out_pll;

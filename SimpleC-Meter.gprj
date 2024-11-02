@@ -7,6 +7,7 @@
     <FileList>
         <File path="src/BlinkLED.vhd" type="file.vhdl" enable="1"/>
         <File path="src/ChargeDischargeControl.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/SevenSegmentDisplay.vhd" type="file.vhdl" enable="1"/>
         <File path="src/SimpleC-Meter.vhd" type="file.vhdl" enable="1"/>
         <File path="src/gowin_rpll/gowin_rpll.vhd" type="file.vhdl" enable="1"/>
         <File path="src/SimpleC-Meter.cst" type="file.cst" enable="1"/>
