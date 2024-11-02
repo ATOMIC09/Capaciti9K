@@ -1,25 +1,54 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+USE ieee.std_logic_arith.ALL;
+USE ieee.std_logic_unsigned.ALL;
 
 ENTITY SimpleC_Meter IS
     PORT (
         RESET : IN STD_LOGIC;
-        CLK_OUT : OUT STD_LOGIC
+        CLK_IN_27M : IN STD_LOGIC;
+        CLK_OUT_27M : OUT STD_LOGIC;
+        CLK_OUT : OUT STD_LOGIC;
+        CLK_OUTD : OUT STD_LOGIC;
+        LED : OUT STD_LOGIC_VECTOR(5 DOWNTO 0)
     );
 END ENTITY SimpleC_Meter;
 
 ARCHITECTURE Structural OF SimpleC_Meter IS
-    COMPONENT Gowin_OSC
+    SIGNAL clk_out_pll : STD_LOGIC;
+    SIGNAL clk_outd_pll : STD_LOGIC;
+
+    COMPONENT Gowin_rPLL
         PORT (
-            oscout : OUT STD_LOGIC
+            clkout : OUT STD_LOGIC;
+            clkoutd : OUT STD_LOGIC;
+            clkin : IN STD_LOGIC
+        );
+    END COMPONENT;
+
+    COMPONENT BlinkLED
+        PORT (
+            CLK_50M : IN STD_LOGIC;
+            LED : OUT STD_LOGIC_VECTOR(5 DOWNTO 0)
         );
     END COMPONENT;
 
 BEGIN
-    gowin_osc1 : Gowin_OSC
+    gowin_pll1 : Gowin_rPLL
     PORT MAP(
-        oscout => CLK_OUT
+        clkout => clk_out_pll,
+        clkoutd => clk_outd_pll,
+        clkin => CLK_IN_27M
     );
 
+    blink_led : BlinkLED
+    PORT MAP(
+        CLK_50M => clk_out_pll,
+        LED => LED
+    );
+
+    CLK_OUT <= clk_out_pll;
+    CLK_OUTD <= clk_outd_pll;
+    CLK_OUT_27M <= CLK_IN_27M;
 END ARCHITECTURE Structural;
