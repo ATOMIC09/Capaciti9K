@@ -11,7 +11,9 @@ ENTITY SimpleC_Meter IS
         CLK_OUT_27M : OUT STD_LOGIC;
         CLK_OUT : OUT STD_LOGIC;
         CLK_OUTD : OUT STD_LOGIC;
-        LED : OUT STD_LOGIC_VECTOR(5 DOWNTO 0)
+        LED : OUT STD_LOGIC_VECTOR(5 DOWNTO 0);
+        CHARGE_TRIGGER : OUT STD_LOGIC;
+        DISCHARGE_TRIGGER : OUT STD_LOGIC
     );
 END ENTITY SimpleC_Meter;
 
@@ -34,6 +36,14 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
         );
     END COMPONENT;
 
+    COMPONENT ChargeDischargeControl
+        PORT (
+            CLK_50M : IN STD_LOGIC;
+            CHARGE : OUT STD_LOGIC;
+            DISCHARGE : OUT STD_LOGIC
+        );
+    END COMPONENT;
+
 BEGIN
     gowin_pll1 : Gowin_rPLL
     PORT MAP(
@@ -46,6 +56,13 @@ BEGIN
     PORT MAP(
         CLK_50M => clk_out_pll,
         LED => LED
+    );
+
+    charge_discharge : ChargeDischargeControl
+    PORT MAP(
+        CLK_50M => clk_out_pll,
+        CHARGE => CHARGE_TRIGGER,
+        DISCHARGE => DISCHARGE_TRIGGER
     );
 
     CLK_OUT <= clk_out_pll;
