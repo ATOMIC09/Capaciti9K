@@ -6,7 +6,7 @@ ENTITY SevenSegmentDisplay IS
     PORT (
         clk : IN STD_LOGIC; -- Clock input for multiplexing
         input_int : IN INTEGER RANGE 0 TO 9999; -- Integer input (0-9999)
-        decimal_point : IN INTEGER RANGE 0 TO 3; -- Decimal point position (0-3)
+        decimal_point : IN INTEGER RANGE 0 TO 4; -- Decimal point position (0-3)
         digit1, digit2, digit3, digit4 : OUT STD_LOGIC; -- Digit control for transistors
         a, b, c, d, e, f, g, dp : OUT STD_LOGIC -- Segment outputs
     );

@@ -7,6 +7,7 @@ USE ieee.std_logic_unsigned.ALL;
 ENTITY SimpleC_Meter IS
     PORT (
         RESET : IN STD_LOGIC;
+        RCTRIGGER : IN STD_LOGIC; -- Feedback from RC circuit
         CLK_IN_27M : IN STD_LOGIC; -- 27MHz clock input
         CLK_OUT_27M : OUT STD_LOGIC; -- 27MHz clock output
         CLK_OUT : OUT STD_LOGIC; -- 50MHz clock output
@@ -22,6 +23,8 @@ END ENTITY SimpleC_Meter;
 ARCHITECTURE Structural OF SimpleC_Meter IS
     SIGNAL clk_out_pll : STD_LOGIC;
     SIGNAL clk_outd_pll : STD_LOGIC;
+    SIGNAL CAPACITANCE_CALCULATED : INTEGER;
+    SIGNAL TIME_DEBUG : INTEGER := 0;
 
     COMPONENT Gowin_rPLL
         PORT (
@@ -50,12 +53,22 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
         PORT (
             clk : IN STD_LOGIC;
             input_int : IN INTEGER RANGE 0 TO 9999;
-            decimal_point : IN INTEGER RANGE 0 TO 3;
+            decimal_point : IN INTEGER RANGE 0 TO 4;
             digit1, digit2, digit3, digit4 : OUT STD_LOGIC;
             a, b, c, d, e, f, g, dp : OUT STD_LOGIC
         );
     END COMPONENT;
 
+    COMPONENT CalculateCapacitance
+        PORT (
+            clk : IN STD_LOGIC;
+            reset : IN STD_LOGIC;
+            -- start_charge : IN STD_LOGIC;
+            -- rctrigger : IN STD_LOGIC;
+            -- capacitance : OUT INTEGER;
+            time_debug : OUT INTEGER
+        );
+    END COMPONENT;
 BEGIN
     gowin_pll1 : Gowin_rPLL
     PORT MAP(
@@ -80,8 +93,8 @@ BEGIN
     seven_segment : SevenSegmentDisplay
     PORT MAP(
         clk => clk_outd_pll,
-        input_int => 2567,
-        decimal_point => 2,
+        input_int => TIME_DEBUG,
+        decimal_point => 4,
         digit1 => DIGIT1,
         digit2 => DIGIT2,
         digit3 => DIGIT3,
@@ -94,6 +107,16 @@ BEGIN
         f => F,
         g => G,
         dp => DP
+    );
+
+    calculate_capacitance : CalculateCapacitance
+    PORT MAP(
+        clk => clk_out_pll,
+        reset => RESET,
+        -- start_charge => CHARGE_TRIGGER,
+        -- rctrigger => RCTRIGGER,
+        -- capacitance => CAPACITANCE_CALCULATED,
+        time_debug => TIME_DEBUG
     );
 
     CLK_OUT <= clk_out_pll;
