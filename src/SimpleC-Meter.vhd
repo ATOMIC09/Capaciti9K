@@ -13,6 +13,7 @@ ENTITY SimpleC_Meter IS
         CLK_OUT : OUT STD_LOGIC; -- 50MHz clock output
         CLK_OUTD : OUT STD_LOGIC; -- 1MHz clock output
         LED : OUT STD_LOGIC_VECTOR(5 DOWNTO 0);
+        LED1, LED2 : OUT STD_LOGIC; 
         CHARGE_TRIGGER : OUT STD_LOGIC; -- Charge trigger to RC circuit
         DISCHARGE_TRIGGER : OUT STD_LOGIC; -- Discharge trigger to RC circuit
         DIGIT1, DIGIT2, DIGIT3, DIGIT4 : OUT STD_LOGIC;
