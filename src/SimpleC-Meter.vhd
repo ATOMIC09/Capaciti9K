@@ -6,6 +6,7 @@ USE ieee.std_logic_unsigned.ALL;
 
 ENTITY SimpleC_Meter IS
     PORT (
+        TEST : IN STD_LOGIC;
         RESET : IN STD_LOGIC;
         RCTRIGGER : IN STD_LOGIC; -- Feedback from RC circuit
         CLK_IN_27M : IN STD_LOGIC; -- 27MHz clock input
@@ -25,7 +26,8 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
     SIGNAL clk_out_pll : STD_LOGIC;
     SIGNAL clk_outd_pll : STD_LOGIC;
     SIGNAL CAPACITANCE_CALCULATED : INTEGER;
-    SIGNAL TIME_DEBUG : INTEGER := 0;
+    SIGNAL DEBUG : INTEGER := 0;
+    SIGNAL RESET_MODE : STD_LOGIC := '0';
 
     COMPONENT Gowin_rPLL
         PORT (
@@ -46,13 +48,15 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
         PORT (
             CLK_50M : IN STD_LOGIC;
             CHARGE : OUT STD_LOGIC;
-            DISCHARGE : OUT STD_LOGIC
+            DISCHARGE : OUT STD_LOGIC;
+            reset : IN STD_LOGIC
         );
     END COMPONENT;
 
     COMPONENT SevenSegmentDisplay
         PORT (
             clk : IN STD_LOGIC;
+            reset_mode : IN STD_LOGIC;
             input_int : IN INTEGER RANGE 0 TO 9999;
             decimal_point : IN INTEGER RANGE 0 TO 4;
             digit1, digit2, digit3, digit4 : OUT STD_LOGIC;
@@ -64,10 +68,12 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
         PORT (
             clk : IN STD_LOGIC;
             reset : IN STD_LOGIC;
-            -- start_charge : IN STD_LOGIC;
-            -- rctrigger : IN STD_LOGIC;
-            -- capacitance : OUT INTEGER;
-            time_debug : OUT INTEGER
+            start_charge : IN STD_LOGIC;
+            rctrigger : IN STD_LOGIC;
+            LED_MICRO : OUT STD_LOGIC;
+            LED_PICO : OUT STD_LOGIC;
+            display_val : OUT INTEGER;
+            reset_mode : OUT STD_LOGIC
         );
     END COMPONENT;
 BEGIN
@@ -88,13 +94,15 @@ BEGIN
     PORT MAP(
         CLK_50M => clk_out_pll,
         CHARGE => CHARGE_TRIGGER,
-        DISCHARGE => DISCHARGE_TRIGGER
+        DISCHARGE => DISCHARGE_TRIGGER,
+        reset => RESET
     );
 
     seven_segment : SevenSegmentDisplay
     PORT MAP(
         clk => clk_outd_pll,
-        input_int => TIME_DEBUG,
+        reset_mode => RESET_MODE,
+        input_int => DEBUG,
         decimal_point => 4,
         digit1 => DIGIT1,
         digit2 => DIGIT2,
@@ -114,10 +122,12 @@ BEGIN
     PORT MAP(
         clk => clk_out_pll,
         reset => RESET,
-        -- start_charge => CHARGE_TRIGGER,
-        -- rctrigger => RCTRIGGER,
-        -- capacitance => CAPACITANCE_CALCULATED,
-        time_debug => TIME_DEBUG
+        start_charge => CHARGE_TRIGGER,
+        rctrigger => DISCHARGE_TRIGGER,
+        LED_MICRO => LED1,
+        LED_PICO => LED2,
+        display_val => DEBUG,
+        reset_mode => RESET_MODE
     );
 
     CLK_OUT <= clk_out_pll;

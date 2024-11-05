@@ -1,69 +1,73 @@
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
 
-entity ChargeDischargeControl is
-    port (
-        CLK_50M : in std_logic;          -- 50 MHz clock input
-        CHARGE : out std_logic;          -- Output to control charge
-        DISCHARGE : out std_logic        -- Output to control discharge
+ENTITY ChargeDischargeControl IS
+    PORT (
+        CLK_50M : IN STD_LOGIC; -- 50 MHz clock input
+        CHARGE : OUT STD_LOGIC; -- Output to control charge
+        DISCHARGE : OUT STD_LOGIC; -- Output to control discharge
+        reset : IN STD_LOGIC -- Reset signal
     );
-end entity ChargeDischargeControl;
+END ENTITY ChargeDischargeControl;
 
-architecture Behavioral of ChargeDischargeControl is
-    type state_type is (IDLE, DISCHARGE_HIGH, DISCHARGE_LOW, CHARGE_HIGH, CHARGE_LOW);
-    signal state : state_type := IDLE;
-    signal counter : unsigned(24 downto 0) := (others => '0'); -- Counter for delays
-begin
-    process (CLK_50M)
-    begin
-        if rising_edge(CLK_50M) then
-            case state is
-                when IDLE =>
+ARCHITECTURE Behavioral OF ChargeDischargeControl IS
+    TYPE state_type IS (IDLE, DISCHARGE_HIGH, DISCHARGE_LOW, CHARGE_HIGH, CHARGE_LOW);
+    SIGNAL state : state_type := IDLE;
+    SIGNAL counter : unsigned(24 DOWNTO 0) := (OTHERS => '0'); -- Counter for delays
+BEGIN
+    PROCESS (CLK_50M, reset)
+    BEGIN
+        IF reset = '0' THEN
+            state <= IDLE;
+            counter <= (OTHERS => '0');
+        ELSIF rising_edge(CLK_50M) THEN
+            CASE state IS
+                WHEN IDLE =>
                     -- Initialize outputs
                     CHARGE <= '0';
                     DISCHARGE <= '0';
                     state <= DISCHARGE_HIGH;
-                
-                when DISCHARGE_HIGH =>
+
+                WHEN DISCHARGE_HIGH =>
                     DISCHARGE <= '1';
-                    if counter = 5000000 then  -- 100 ms delay
-                        counter <= (others => '0');
+                    IF counter = 5000000 THEN -- 100 ms delay
+                        counter <= (OTHERS => '0');
                         state <= DISCHARGE_LOW;
-                    else
+                    ELSE
                         counter <= counter + 1;
-                    end if;
-                    
-                when DISCHARGE_LOW =>
+                    END IF;
+
+                WHEN DISCHARGE_LOW =>
                     DISCHARGE <= '0';
-                    if counter = 500000 then  -- 10 ms delay
-                        counter <= (others => '0');
+                    IF counter = 500000 THEN -- 10 ms delay
+                        counter <= (OTHERS => '0');
                         state <= CHARGE_HIGH;
-                    else
+                    ELSE
                         counter <= counter + 1;
-                    end if;
-                    
-                when CHARGE_HIGH =>
+                    END IF;
+
+                WHEN CHARGE_HIGH =>
                     CHARGE <= '1';
-                    if counter = 25000000 then  -- 500 ms delay
-                        counter <= (others => '0');
+                    IF counter = 25000000 THEN -- 500 ms delay
+                        counter <= (OTHERS => '0');
                         state <= CHARGE_LOW;
-                    else
+                    ELSE
                         counter <= counter + 1;
-                    end if;
-                    
-                when CHARGE_LOW =>
+                    END IF;
+
+                WHEN CHARGE_LOW =>
                     CHARGE <= '0';
-                    if counter = 500000 then  -- 10 ms delay
-                        counter <= (others => '0');
+                    IF counter = 500000 THEN -- 10 ms delay
+                        counter <= (OTHERS => '0');
                         state <= DISCHARGE_HIGH;
-                    else
+                    ELSE
                         counter <= counter + 1;
-                    end if;
-                    
-                when others =>
+                    END IF;
+
+                WHEN OTHERS =>
                     state <= IDLE;
-            end case;
-        end if;
-    end process;
-end architecture Behavioral;
+            END CASE;
+        END IF;
+    END PROCESS;
+END ARCHITECTURE Behavioral;

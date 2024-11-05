@@ -6,6 +6,7 @@ ENTITY SevenSegmentDisplay IS
     PORT (
         clk : IN STD_LOGIC; -- Clock input for multiplexing
         input_int : IN INTEGER RANGE 0 TO 9999; -- Integer input (0-9999)
+        reset_mode : IN STD_LOGIC; -- Signal to trigger "rSEt" display
         decimal_point : IN INTEGER RANGE 0 TO 4; -- Decimal point position (0-3)
         digit1, digit2, digit3, digit4 : OUT STD_LOGIC; -- Digit control for transistors
         a, b, c, d, e, f, g, dp : OUT STD_LOGIC -- Segment outputs
@@ -37,6 +38,18 @@ ARCHITECTURE Behavioral OF SevenSegmentDisplay IS
         END CASE;
     END FUNCTION;
 
+    -- Custom function to decode "rSEt"
+    FUNCTION decode_rSEt(index : INTEGER) RETURN STD_LOGIC_VECTOR IS
+    BEGIN
+        CASE index IS
+            WHEN 0 => RETURN "0000101"; -- 'r' custom pattern
+            WHEN 1 => RETURN "1011011"; -- 'S' pattern (similar to '5')
+            WHEN 2 => RETURN "1001111"; -- 'E' pattern
+            WHEN 3 => RETURN "0001111"; -- 't' custom pattern
+            WHEN OTHERS => RETURN "0000000"; -- Blank/error
+        END CASE;
+    END FUNCTION;
+
 BEGIN
     PROCESS (clk)
     BEGIN
@@ -44,37 +57,57 @@ BEGIN
             -- Counter for multiplexing timing
             IF counter = MAX_COUNT THEN
                 counter <= 0;
+
                 -- Update digit being displayed
                 current_digit <= (current_digit + 1) MOD 4;
 
-                -- Extract each digit from input integer, from left to right
-                CASE current_digit IS
-                    WHEN 3 => digit_value <= (input_int / 1000) MOD 10; -- Leftmost digit
-                    WHEN 0 => digit_value <= (input_int / 100) MOD 10;
-                    WHEN 1 => digit_value <= (input_int / 10) MOD 10;
-                    WHEN 2 => digit_value <= input_int MOD 10; -- Rightmost digit
-                    WHEN OTHERS => digit_value <= 0;
-                END CASE;
+                -- Check if reset_mode is active to display "rSEt"
+                IF reset_mode = '1' THEN
+                    display_data <= decode_rSEt(current_digit);
 
-                -- Control transistors for each digit
-                IF current_digit = 0 THEN
-                    digit1 <= '1'; digit2 <= '0'; digit3 <= '0'; digit4 <= '0';
-                ELSIF current_digit = 1 THEN
-                    digit1 <= '0'; digit2 <= '1'; digit3 <= '0'; digit4 <= '0';
-                ELSIF current_digit = 2 THEN
-                    digit1 <= '0'; digit2 <= '0'; digit3 <= '1'; digit4 <= '0';
+                    -- Control transistors for each digit in "rSEt" mode
+                    IF current_digit = 0 THEN
+                        digit1 <= '1'; digit2 <= '0'; digit3 <= '0'; digit4 <= '0';
+                    ELSIF current_digit = 1 THEN
+                        digit1 <= '0'; digit2 <= '1'; digit3 <= '0'; digit4 <= '0';
+                    ELSIF current_digit = 2 THEN
+                        digit1 <= '0'; digit2 <= '0'; digit3 <= '1'; digit4 <= '0';
+                    ELSE
+                        digit1 <= '0'; digit2 <= '0'; digit3 <= '0'; digit4 <= '1';
+                    END IF;
+
+                    dp <= '0'; -- No decimal point in "rSEt" mode
+
                 ELSE
-                    digit1 <= '0'; digit2 <= '0'; digit3 <= '0'; digit4 <= '1';
-                END IF;
+                    -- Normal operation: Extract each digit from input integer
+                    CASE current_digit IS
+                        WHEN 3 => digit_value <= (input_int / 1000) MOD 10; -- Leftmost digit
+                        WHEN 0 => digit_value <= (input_int / 100) MOD 10;
+                        WHEN 1 => digit_value <= (input_int / 10) MOD 10;
+                        WHEN 2 => digit_value <= input_int MOD 10; -- Rightmost digit
+                        WHEN OTHERS => digit_value <= 0;
+                    END CASE;
 
-                -- Decode digit to 7-segment display
-                display_data <= decode_digit(digit_value);
+                    -- Control transistors for each digit
+                    IF current_digit = 0 THEN
+                        digit1 <= '1'; digit2 <= '0'; digit3 <= '0'; digit4 <= '0';
+                    ELSIF current_digit = 1 THEN
+                        digit1 <= '0'; digit2 <= '1'; digit3 <= '0'; digit4 <= '0';
+                    ELSIF current_digit = 2 THEN
+                        digit1 <= '0'; digit2 <= '0'; digit3 <= '1'; digit4 <= '0';
+                    ELSE
+                        digit1 <= '0'; digit2 <= '0'; digit3 <= '0'; digit4 <= '1';
+                    END IF;
 
-                -- Set decimal point if needed
-                IF current_digit = decimal_point THEN
-                    dp <= '1'; -- Active high for decimal point
-                ELSE
-                    dp <= '0';
+                    -- Decode digit to 7-segment display
+                    display_data <= decode_digit(digit_value);
+
+                    -- Set decimal point if needed
+                    IF current_digit = decimal_point THEN
+                        dp <= '1'; -- Active high for decimal point
+                    ELSE
+                        dp <= '0';
+                    END IF;
                 END IF;
             ELSE
                 counter <= counter + 1;
