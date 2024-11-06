@@ -10,7 +10,7 @@ entity CalculateCapacitance is
         start_charge : IN STD_LOGIC;           -- signal when capacitor starts charging
         rctrigger    : IN STD_LOGIC;           -- signal when capacitor reaches 63.2%
         LED_MICRO    : OUT STD_LOGIC;          -- LED indicator for microfarad range
-        LED_PICO     : OUT STD_LOGIC;          -- LED indicator for picofarad range
+        LED_NANO     : OUT STD_LOGIC;          -- LED indicator for picofarad range
         display_val  : OUT INTEGER;            -- Output to 7-segment display
         reset_mode   : OUT STD_LOGIC           -- Output to reset 7-segment display
     );
@@ -45,7 +45,7 @@ begin
             clock_counter <= clock_counter + 1;
             
             -- Detect falling edge of start_charge signal
-            if (start_charge = '1' and prev_charge_state = '0') then
+            if (start_charge = '0' and prev_charge_state = '1') then
                 start_time <= clock_counter;
             end if;
 
@@ -54,13 +54,24 @@ begin
                 end_time <= clock_counter;
             end if;
 
-            -- Calculate time interval (convert clock to seconds)
+            -- Calculate time interval (convert clock to nanoseconds)
             if end_time > start_time then
-                time_interval <= (end_time - start_time) / clk_freq;
+                time_interval <= (end_time - start_time)*20;
             end if;
 
-            -- Calculate capacitance value
-            display_val <= time_interval / R;
+            -- Calculate capacitance value from tau = RC
+            if time_interval > 0 then
+                display_val <= (time_interval * R);
+
+                -- Determine range of capacitance value
+                if display_val < 100000 then
+                    LED_MICRO <= '1';
+                    LED_NANO <= '0';
+                else
+                    LED_MICRO <= '0';
+                    LED_NANO <= '1';
+                end if;
+            end if;
 
             -- Update previous states AFTER edge detection
             prev_charge_state <= start_charge;
@@ -70,6 +81,6 @@ begin
     end process;
 
     -- Debugging LEDs to show signal states
-    LED_MICRO <= start_charge;
-    LED_PICO <= rctrigger;
+    -- LED_MICRO <= start_charge;
+    -- LED_NANO <= rctrigger;
 end Behavioral;

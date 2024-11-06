@@ -71,7 +71,7 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
             start_charge : IN STD_LOGIC;
             rctrigger : IN STD_LOGIC;
             LED_MICRO : OUT STD_LOGIC;
-            LED_PICO : OUT STD_LOGIC;
+            LED_NANO : OUT STD_LOGIC;
             display_val : OUT INTEGER;
             reset_mode : OUT STD_LOGIC
         );
@@ -126,7 +126,7 @@ BEGIN
         start_charge => CHARGE_TRIGGER,
         rctrigger => RCTRIGGER,
         LED_MICRO => LED1,
-        LED_PICO => LED2,
+        LED_NANO => LED2,
         display_val => CAPACITANCE_CALCULATED,
         reset_mode => RESET_MODE
     );
