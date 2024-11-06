@@ -57,10 +57,7 @@ begin
                 end_time <= clock_counter;
 
                 -- Calculate the time in microseconds
-                time_interval <= (end_time - start_time) / 50;
-
-                -- Display the calculated time interval
-                display_val <= time_interval;
+                display_val <= (end_time - start_time)*20/1000/R;
 
                 captured <= TRUE;                  -- Set flag to prevent further captures
             end if;

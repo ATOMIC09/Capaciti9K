@@ -127,7 +127,7 @@ BEGIN
         clk => clk_out_pll,
         reset => RESET,
         start_charge => CHARGE_TRIGGER,
-        rctrigger => DISCHARGE_TRIGGER,
+        rctrigger => RCTRIGGER,
         LED_MICRO => LED1,
         LED_PICO => LED2,
         display_val => DEBUG,

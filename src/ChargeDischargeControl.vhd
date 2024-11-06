@@ -49,8 +49,8 @@ BEGIN
 
                 WHEN CHARGE_HIGH =>
                     CHARGE <= '1';
-                    -- IF counter = 25000000 THEN -- 500 ms delay
-                    IF counter = 11250000 THEN -- 225 ms delay
+                    IF counter = 25000000 THEN -- 500 ms delay
+                    -- IF counter = 11250000 THEN -- 225 ms delay (test)
                         counter <= (OTHERS => '0');
                         state <= CHARGE_LOW;
                     ELSE
