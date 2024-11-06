@@ -3,8 +3,6 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.std_logic_arith.ALL;
 USE ieee.MATH_REAL.ALL;
-
-
 ENTITY SevenSegmentDisplay IS
     PORT (
         clk : IN STD_LOGIC; -- Clock input for multiplexing
@@ -22,8 +20,6 @@ ARCHITECTURE Behavioral OF SevenSegmentDisplay IS
     SIGNAL display_data : STD_LOGIC_VECTOR(6 DOWNTO 0);
     SIGNAL counter : INTEGER := 0;
     CONSTANT MAX_COUNT : INTEGER := 1000; -- Faster refresh rate for less flicker
-
-    SIGNAL truncated_input : INTEGER RANGE 0 TO 9999; -- Hold 4 most significant digits
 
     -- Digit decoding for 7-segment display (active high)
     FUNCTION decode_digit(digit : INTEGER) RETURN STD_LOGIC_VECTOR IS
@@ -59,13 +55,6 @@ BEGIN
     PROCESS (clk)
     BEGIN
         IF rising_edge(clk) THEN
-            -- Limit input to 4 most significant digits
-            IF input_int > 9999 THEN
-                truncated_input <= input_int / 10**(INTEGER(log(real(input_int)) / log(10.0)) - 3);
-            ELSE
-                truncated_input <= input_int;
-            END IF;
-
             -- Counter for multiplexing timing
             IF counter = MAX_COUNT THEN
                 counter <= 0;
@@ -79,36 +68,121 @@ BEGIN
 
                     -- Control transistors for each digit in "rSEt" mode
                     IF current_digit = 0 THEN
-                        digit1 <= '1'; digit2 <= '0'; digit3 <= '0'; digit4 <= '0';
+                        digit1 <= '1';
+                        digit2 <= '0';
+                        digit3 <= '0';
+                        digit4 <= '0';
                     ELSIF current_digit = 1 THEN
-                        digit1 <= '0'; digit2 <= '1'; digit3 <= '0'; digit4 <= '0';
+                        digit1 <= '0';
+                        digit2 <= '1';
+                        digit3 <= '0';
+                        digit4 <= '0';
                     ELSIF current_digit = 2 THEN
-                        digit1 <= '0'; digit2 <= '0'; digit3 <= '1'; digit4 <= '0';
+                        digit1 <= '0';
+                        digit2 <= '0';
+                        digit3 <= '1';
+                        digit4 <= '0';
                     ELSE
-                        digit1 <= '0'; digit2 <= '0'; digit3 <= '0'; digit4 <= '1';
+                        digit1 <= '0';
+                        digit2 <= '0';
+                        digit3 <= '0';
+                        digit4 <= '1';
                     END IF;
 
                     dp <= '0'; -- No decimal point in "rSEt" mode
 
                 ELSE
-                    -- Normal operation: Extract each digit from truncated integer
-                    CASE current_digit IS
-                        WHEN 3 => digit_value <= (truncated_input / 1000) MOD 10; -- Leftmost digit
-                        WHEN 0 => digit_value <= (truncated_input / 100) MOD 10;
-                        WHEN 1 => digit_value <= (truncated_input / 10) MOD 10;
-                        WHEN 2 => digit_value <= truncated_input MOD 10; -- Rightmost digit
-                        WHEN OTHERS => digit_value <= 0;
-                    END CASE;
+                    IF input_int < 10000 THEN
+                        CASE current_digit IS
+                            WHEN 3 => digit_value <= (input_int / 1000) MOD 10; -- Leftmost digit
+                            WHEN 0 => digit_value <= (input_int / 100) MOD 10;
+                            WHEN 1 => digit_value <= (input_int / 10) MOD 10;
+                            WHEN 2 => digit_value <= (input_int / 1) MOD 10; -- Rightmost digit
+                            WHEN OTHERS => digit_value <= 0;
+                        END CASE;
 
+                    ELSIF (input_int >= 10000 and input_int < 100000) THEN
+                        -- Normal operation: Extract each digit from truncated integer
+                        CASE current_digit IS
+                            WHEN 3 => digit_value <= (input_int / 10000) MOD 10; -- Leftmost digit
+                            WHEN 0 => digit_value <= (input_int / 1000) MOD 10;
+                            WHEN 1 => digit_value <= (input_int / 100) MOD 10;
+                            WHEN 2 => digit_value <= (input_int / 10) MOD 10; -- Rightmost digit
+                            WHEN OTHERS => digit_value <= 0;
+                        END CASE;
+                    
+                    ELSIF (input_int >= 100000 and input_int < 1000000) THEN
+                    -- Normal operation: Extract each digit from truncated integer
+                        CASE current_digit IS
+                            WHEN 3 => digit_value <= (input_int / 100000) MOD 10; -- Leftmost digit
+                            WHEN 0 => digit_value <= (input_int / 10000) MOD 10;
+                            WHEN 1 => digit_value <= (input_int / 1000) MOD 10;
+                            WHEN 2 => digit_value <= (input_int / 100) MOD 10; -- Rightmost digit
+                            WHEN OTHERS => digit_value <= 0;
+                        END CASE;
+                    
+                    ELSIF (input_int >= 1000000 and input_int < 10000000) THEN
+                    -- Normal operation: Extract each digit from truncated integer
+                        CASE current_digit IS
+                            WHEN 3 => digit_value <= (input_int / 1000000) MOD 10; -- Leftmost digit
+                            WHEN 0 => digit_value <= (input_int / 100000) MOD 10;
+                            WHEN 1 => digit_value <= (input_int / 10000) MOD 10;
+                            WHEN 2 => digit_value <= (input_int / 1000) MOD 10; -- Rightmost digit
+                            WHEN OTHERS => digit_value <= 0;
+                        END CASE;
+
+                    ELSIF (input_int >= 10000000 and input_int < 100000000) THEN
+                    -- Normal operation: Extract each digit from truncated integer
+                        CASE current_digit IS
+                            WHEN 3 => digit_value <= (input_int / 10000000) MOD 10; -- Leftmost digit
+                            WHEN 0 => digit_value <= (input_int / 1000000) MOD 10;
+                            WHEN 1 => digit_value <= (input_int / 100000) MOD 10;
+                            WHEN 2 => digit_value <= (input_int / 10000) MOD 10; -- Rightmost digit
+                            WHEN OTHERS => digit_value <= 0;
+                        END CASE;
+
+                    ELSIF (input_int >= 100000000 and input_int < 1000000000) THEN
+                    -- Normal operation: Extract each digit from truncated integer
+                        CASE current_digit IS
+                            WHEN 3 => digit_value <= (input_int / 100000000) MOD 10; -- Leftmost digit
+                            WHEN 0 => digit_value <= (input_int / 10000000) MOD 10;
+                            WHEN 1 => digit_value <= (input_int / 1000000) MOD 10;
+                            WHEN 2 => digit_value <= (input_int / 100000) MOD 10; -- Rightmost digit
+                            WHEN OTHERS => digit_value <= 0;
+                        END CASE;
+
+                    ELSIF (input_int >= 1000000000) THEN
+                    -- Display E
+                        CASE current_digit IS
+                            WHEN 3 => digit_value <= 2; -- Leftmost digit
+                            WHEN 0 => digit_value <= 0;
+                            WHEN 1 => digit_value <= 0;
+                            WHEN 2 => digit_value <= 0; -- Rightmost digit
+                            WHEN OTHERS => digit_value <= 0;
+                        END CASE;
+
+                    END IF;
                     -- Control transistors for each digit
                     IF current_digit = 0 THEN
-                        digit1 <= '1'; digit2 <= '0'; digit3 <= '0'; digit4 <= '0';
+                        digit1 <= '1';
+                        digit2 <= '0';
+                        digit3 <= '0';
+                        digit4 <= '0';
                     ELSIF current_digit = 1 THEN
-                        digit1 <= '0'; digit2 <= '1'; digit3 <= '0'; digit4 <= '0';
+                        digit1 <= '0';
+                        digit2 <= '1';
+                        digit3 <= '0';
+                        digit4 <= '0';
                     ELSIF current_digit = 2 THEN
-                        digit1 <= '0'; digit2 <= '0'; digit3 <= '1'; digit4 <= '0';
+                        digit1 <= '0';
+                        digit2 <= '0';
+                        digit3 <= '1';
+                        digit4 <= '0';
                     ELSE
-                        digit1 <= '0'; digit2 <= '0'; digit3 <= '0'; digit4 <= '1';
+                        digit1 <= '0';
+                        digit2 <= '0';
+                        digit3 <= '0';
+                        digit4 <= '1';
                     END IF;
 
                     -- Decode digit to 7-segment display
@@ -120,9 +194,10 @@ BEGIN
                     ELSE
                         dp <= '0';
                     END IF;
+
                 END IF;
             ELSE
-                counter <= counter + 1;
+            counter <= counter + 1;
             END IF;
         END IF;
     END PROCESS;
