@@ -48,9 +48,10 @@ BEGIN
                     END IF;
 
                 WHEN CHARGE_HIGH =>
-                    CHARGE <= '1';
+                    CHARGE <= '0';
                     IF counter = 25000000 THEN -- 500 ms delay
                     -- IF counter = 11250000 THEN -- 225 ms delay (test)
+                    -- IF counter = 500000 THEN -- 10 ms delay (test2)
                         counter <= (OTHERS => '0');
                         state <= CHARGE_LOW;
                     ELSE
@@ -58,7 +59,7 @@ BEGIN
                     END IF;
 
                 WHEN CHARGE_LOW =>
-                    CHARGE <= '0';
+                    CHARGE <= '1';
                     IF counter = 500000 THEN -- 10 ms delay
                         counter <= (OTHERS => '0');
                         state <= DISCHARGE_HIGH;
