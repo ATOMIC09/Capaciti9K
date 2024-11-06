@@ -12,16 +12,21 @@ entity CalculateCapacitance is
         LED_MICRO    : OUT STD_LOGIC;          -- LED indicator for microfarad range
         LED_PICO     : OUT STD_LOGIC;          -- LED indicator for picofarad range
         display_val  : OUT INTEGER;            -- Output to 7-segment display
-        reset_mode   : OUT STD_LOGIC           -- Output to reset 7-segment display
+        reset_mode   : OUT STD_LOGIC;           -- Output to reset 7-segment display
+        capacitance   : OUT INTEGER            -- Output to capacitance display
     );
 end CalculateCapacitance;
 
 architecture Behavioral of CalculateCapacitance is
     constant clk_freq : INTEGER := 50000000;       -- 50 MHz clock frequency
+    constant R : INTEGER := 500;                  -- Resistance value in ohms
     signal clock_counter : INTEGER RANGE 0 TO 50000000 := 0;
     signal start_time : INTEGER := 0;
     signal end_time : INTEGER := 0;
     signal captured : BOOLEAN := FALSE;            -- Flag to allow single capture of end_time
+    signal prev_start_charge : STD_LOGIC := '0';   -- Previous state of start_charge
+    signal prev_rctrigger : STD_LOGIC := '0';      -- Previous state of rctrigger
+    signal time_interval : INTEGER := 0;           -- Time interval between start and end
 begin
 
     -- Process to handle interval timing and display logic
@@ -34,22 +39,32 @@ begin
             end_time <= 0;
             captured <= FALSE;
             display_val <= 0;
+            prev_start_charge <= '0';
+            prev_rctrigger <= '0';
         elsif rising_edge(clk) then
             reset_mode <= '0';
             clock_counter <= clock_counter + 1;
 
-            -- Capture start_time when start_charge goes high
-            if start_charge = '1' then
+            -- Detect rising edge of start_charge
+            if (start_charge = '1' and prev_start_charge = '0') then
                 start_time <= clock_counter;
                 captured <= FALSE;                 -- Reset capture flag for next cycle
             end if;
+            prev_start_charge <= start_charge;
 
-            -- Capture end_time only once when rctrigger goes high
-            if rctrigger = '1' and not captured then
+            -- Detect rising edge of rctrigger
+            if (rctrigger = '1' and prev_rctrigger = '0' and not captured) then
                 end_time <= clock_counter;
-                display_val <= end_time - start_time;   -- Update display_val once
+
+                -- Calculate the time in microseconds
+                time_interval <= (end_time - start_time) / 50;
+
+                -- Display the calculated time interval
+                display_val <= time_interval;
+
                 captured <= TRUE;                  -- Set flag to prevent further captures
             end if;
+            prev_rctrigger <= rctrigger;
         end if;
     end process;
 

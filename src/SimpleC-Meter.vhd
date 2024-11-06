@@ -26,7 +26,9 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
     SIGNAL clk_out_pll : STD_LOGIC;
     SIGNAL clk_outd_pll : STD_LOGIC;
     SIGNAL CAPACITANCE_CALCULATED : INTEGER;
+    SIGNAL CAPACITANCE_CALCULATED_DP : INTEGER := 4;
     SIGNAL DEBUG : INTEGER := 0;
+    SIGNAL DEBUG_DP : INTEGER := 4;
     SIGNAL RESET_MODE : STD_LOGIC := '0';
 
     COMPONENT Gowin_rPLL
@@ -57,7 +59,7 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
         PORT (
             clk : IN STD_LOGIC;
             reset_mode : IN STD_LOGIC;
-            input_int : IN INTEGER RANGE 0 TO 9999;
+            input_int : IN INTEGER RANGE 0 TO 50000000;
             decimal_point : IN INTEGER RANGE 0 TO 4;
             digit1, digit2, digit3, digit4 : OUT STD_LOGIC;
             a, b, c, d, e, f, g, dp : OUT STD_LOGIC
@@ -73,9 +75,11 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
             LED_MICRO : OUT STD_LOGIC;
             LED_PICO : OUT STD_LOGIC;
             display_val : OUT INTEGER;
-            reset_mode : OUT STD_LOGIC
+            reset_mode : OUT STD_LOGIC;
+            capacitance : OUT INTEGER
         );
     END COMPONENT;
+
 BEGIN
     gowin_pll1 : Gowin_rPLL
     PORT MAP(
@@ -103,7 +107,7 @@ BEGIN
         clk => clk_outd_pll,
         reset_mode => RESET_MODE,
         input_int => DEBUG,
-        decimal_point => 4,
+        decimal_point => DEBUG_DP,
         digit1 => DIGIT1,
         digit2 => DIGIT2,
         digit3 => DIGIT3,
@@ -127,7 +131,8 @@ BEGIN
         LED_MICRO => LED1,
         LED_PICO => LED2,
         display_val => DEBUG,
-        reset_mode => RESET_MODE
+        reset_mode => RESET_MODE,
+        capacitance => CAPACITANCE_CALCULATED
     );
 
     CLK_OUT <= clk_out_pll;

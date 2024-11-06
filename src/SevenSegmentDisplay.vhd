@@ -1,11 +1,14 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+USE ieee.std_logic_arith.ALL;
+USE ieee.MATH_REAL.ALL;
+
 
 ENTITY SevenSegmentDisplay IS
     PORT (
         clk : IN STD_LOGIC; -- Clock input for multiplexing
-        input_int : IN INTEGER RANGE 0 TO 9999; -- Integer input (0-9999)
+        input_int : IN INTEGER RANGE 0 TO 50000000; -- Integer input
         reset_mode : IN STD_LOGIC; -- Signal to trigger "rSEt" display
         decimal_point : IN INTEGER RANGE 0 TO 4; -- Decimal point position (0-3)
         digit1, digit2, digit3, digit4 : OUT STD_LOGIC; -- Digit control for transistors
@@ -19,6 +22,8 @@ ARCHITECTURE Behavioral OF SevenSegmentDisplay IS
     SIGNAL display_data : STD_LOGIC_VECTOR(6 DOWNTO 0);
     SIGNAL counter : INTEGER := 0;
     CONSTANT MAX_COUNT : INTEGER := 1000; -- Faster refresh rate for less flicker
+
+    SIGNAL truncated_input : INTEGER RANGE 0 TO 9999; -- Hold 4 most significant digits
 
     -- Digit decoding for 7-segment display (active high)
     FUNCTION decode_digit(digit : INTEGER) RETURN STD_LOGIC_VECTOR IS
@@ -54,6 +59,13 @@ BEGIN
     PROCESS (clk)
     BEGIN
         IF rising_edge(clk) THEN
+            -- Limit input to 4 most significant digits
+            IF input_int > 9999 THEN
+                truncated_input <= input_int / 10**(INTEGER(log(real(input_int)) / log(10.0)) - 3);
+            ELSE
+                truncated_input <= input_int;
+            END IF;
+
             -- Counter for multiplexing timing
             IF counter = MAX_COUNT THEN
                 counter <= 0;
@@ -79,12 +91,12 @@ BEGIN
                     dp <= '0'; -- No decimal point in "rSEt" mode
 
                 ELSE
-                    -- Normal operation: Extract each digit from input integer
+                    -- Normal operation: Extract each digit from truncated integer
                     CASE current_digit IS
-                        WHEN 3 => digit_value <= (input_int / 1000) MOD 10; -- Leftmost digit
-                        WHEN 0 => digit_value <= (input_int / 100) MOD 10;
-                        WHEN 1 => digit_value <= (input_int / 10) MOD 10;
-                        WHEN 2 => digit_value <= input_int MOD 10; -- Rightmost digit
+                        WHEN 3 => digit_value <= (truncated_input / 1000) MOD 10; -- Leftmost digit
+                        WHEN 0 => digit_value <= (truncated_input / 100) MOD 10;
+                        WHEN 1 => digit_value <= (truncated_input / 10) MOD 10;
+                        WHEN 2 => digit_value <= truncated_input MOD 10; -- Rightmost digit
                         WHEN OTHERS => digit_value <= 0;
                     END CASE;
 
