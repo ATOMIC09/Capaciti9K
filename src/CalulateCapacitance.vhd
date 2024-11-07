@@ -37,7 +37,7 @@ begin
             end_time <= 0;
             time_interval <= 0;
             display_val <= 0;
-            prev_charge_state <= '0';
+            prev_charge_state <= '1';
             prev_rctrigger_state <= '0';
 
         elsif rising_edge(clk) then
@@ -61,16 +61,25 @@ begin
 
             -- Calculate capacitance value from tau = RC
             if time_interval > 0 then
-                display_val <= (time_interval * R);
+                display_val <= (time_interval / R); -- Original capacitance value in nanofarads
+                LED_MICRO <= '0';
+                LED_NANO <= '1';
 
-                -- Determine range of capacitance value
-                if display_val < 100000 then
-                    LED_MICRO <= '1';
-                    LED_NANO <= '0';
-                else
-                    LED_MICRO <= '0';
-                    LED_NANO <= '1';
-                end if;
+            -- Convert to microfarads if value is greater than 1000
+            elsif display_val > 1000 then
+                display_val <= display_val / 1000; -- Convert to microfarads
+                LED_MICRO <= '1';
+                LED_NANO <= '0';
+
+            -- Convert to picofarads if value is less than 1
+            elsif display_val < 1 then
+                display_val <= display_val * 1000; -- Convert to picofarads
+                LED_MICRO <= '1';
+                LED_NANO <= '1';
+
+            else
+                LED_MICRO <= '0';
+                LED_NANO <= '0';
             end if;
 
             -- Update previous states AFTER edge detection
