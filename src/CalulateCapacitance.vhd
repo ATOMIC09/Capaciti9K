@@ -26,6 +26,7 @@ architecture Behavioral of CalculateCapacitance is
     signal time_interval : INTEGER := 0;
     signal prev_charge_state : STD_LOGIC := '0';
     signal prev_rctrigger_state : STD_LOGIC := '0';
+    signal capacitor_value : INTEGER := 0;
 begin
 
     -- Process to handle interval timing and display logic
@@ -41,6 +42,7 @@ begin
             prev_charge_state <= '1';
             prev_rctrigger_state <= '0';
             decimal_point <= 4;
+            capacitor_value <= 0;
 
         elsif rising_edge(clk) then
             reset_mode <= '0';
@@ -63,30 +65,26 @@ begin
 
             -- Calculate capacitance value from tau = RC
             -- Original capacitance value in nanofarads
-            if time_interval > 0 then -- nanofarads
-                display_val <= (time_interval / R); 
-                LED_MICRO <= '0';
-                LED_NANO <= '1';
-                decimal_point <= 1;
+            if time_interval > 0 then
+                capacitor_value <= (time_interval / R); 
+            end if;
 
-            -- Convert to microfarads if value is greater than 1000
-            elsif display_val > 1000 then
-                display_val <= display_val / 1000; -- Convert to microfarads
+            -- Convert capacitance value to microfarads
+            if capacitor_value > 1000 then
+                display_val <= capacitor_value / 1000;
+                decimal_point <= 3;
+            else
+                display_val <= capacitor_value;
+                decimal_point <= 4;
+            end if;
+
+            -- Set LED indicators based on capacitance range
+            if capacitor_value > 1000 then
                 LED_MICRO <= '1';
                 LED_NANO <= '0';
-                decimal_point <= 2;
-
-            -- Convert to picofarads if value is less than 1
-            elsif display_val < 1 then
-                display_val <= display_val * 1000; -- Convert to picofarads
-                LED_MICRO <= '1';
-                LED_NANO <= '1';
-                decimal_point <= 3;
-
             else
                 LED_MICRO <= '0';
-                LED_NANO <= '0';
-                decimal_point <= 4;
+                LED_NANO <= '1';
             end if;
 
             -- Update previous states AFTER edge detection
