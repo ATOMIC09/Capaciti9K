@@ -12,7 +12,8 @@ entity CalculateCapacitance is
         LED_MICRO    : OUT STD_LOGIC;          -- LED indicator for microfarad range
         LED_NANO     : OUT STD_LOGIC;          -- LED indicator for picofarad range
         display_val  : OUT INTEGER;            -- Output to 7-segment display
-        reset_mode   : OUT STD_LOGIC           -- Output to reset 7-segment display
+        reset_mode   : OUT STD_LOGIC;           -- Output to reset 7-segment display
+        decimal_point : OUT INTEGER RANGE 0 TO 4
     );
 end CalculateCapacitance;
 
@@ -39,6 +40,7 @@ begin
             display_val <= 0;
             prev_charge_state <= '1';
             prev_rctrigger_state <= '0';
+            decimal_point <= 4;
 
         elsif rising_edge(clk) then
             reset_mode <= '0';
@@ -60,26 +62,31 @@ begin
             end if;
 
             -- Calculate capacitance value from tau = RC
-            if time_interval > 0 then
-                display_val <= (time_interval / R); -- Original capacitance value in nanofarads
+            -- Original capacitance value in nanofarads
+            if time_interval > 0 then -- nanofarads
+                display_val <= (time_interval / R); 
                 LED_MICRO <= '0';
                 LED_NANO <= '1';
+                decimal_point <= 1;
 
             -- Convert to microfarads if value is greater than 1000
             elsif display_val > 1000 then
                 display_val <= display_val / 1000; -- Convert to microfarads
                 LED_MICRO <= '1';
                 LED_NANO <= '0';
+                decimal_point <= 2;
 
             -- Convert to picofarads if value is less than 1
             elsif display_val < 1 then
                 display_val <= display_val * 1000; -- Convert to picofarads
                 LED_MICRO <= '1';
                 LED_NANO <= '1';
+                decimal_point <= 3;
 
             else
                 LED_MICRO <= '0';
                 LED_NANO <= '0';
+                decimal_point <= 4;
             end if;
 
             -- Update previous states AFTER edge detection

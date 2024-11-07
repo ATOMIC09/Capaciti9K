@@ -73,7 +73,8 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
             LED_MICRO : OUT STD_LOGIC;
             LED_NANO : OUT STD_LOGIC;
             display_val : OUT INTEGER;
-            reset_mode : OUT STD_LOGIC
+            reset_mode : OUT STD_LOGIC;
+            decimal_point : OUT INTEGER RANGE 0 TO 4
         );
     END COMPONENT;
 
@@ -128,7 +129,8 @@ BEGIN
         LED_MICRO => LED1,
         LED_NANO => LED2,
         display_val => CAPACITANCE_CALCULATED,
-        reset_mode => RESET_MODE
+        reset_mode => RESET_MODE,
+        decimal_point => CAPACITANCE_CALCULATED_DP
     );
 
     CLK_OUT <= clk_out_pll;
