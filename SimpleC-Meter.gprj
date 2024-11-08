@@ -12,5 +12,6 @@
         <File path="src/SimpleC-Meter.vhd" type="file.vhdl" enable="1"/>
         <File path="src/gowin_rpll/gowin_rpll.vhd" type="file.vhdl" enable="1"/>
         <File path="src/SimpleC-Meter.cst" type="file.cst" enable="1"/>
+        <File path="src/SimpleC-Meter.sdc" type="file.sdc" enable="1"/>
     </FileList>
 </Project>

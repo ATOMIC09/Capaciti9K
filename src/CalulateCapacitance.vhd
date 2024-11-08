@@ -13,13 +13,14 @@ entity CalculateCapacitance is
         LED_NANO     : OUT STD_LOGIC;          -- LED indicator for picofarad range
         display_val  : OUT INTEGER;            -- Output to 7-segment display
         reset_mode   : OUT STD_LOGIC;           -- Output to reset 7-segment display
+        wait_mode    : OUT STD_LOGIC;           -- Output to wait 7-segment display
         decimal_point : OUT INTEGER RANGE 0 TO 4
     );
 end CalculateCapacitance;
 
 architecture Behavioral of CalculateCapacitance is
     constant clk_freq : INTEGER := 50000000;       -- 50 MHz clock frequency
-    constant R : INTEGER := 510;                   -- Resistance value in ohms
+    constant R : INTEGER := 498;                   -- Resistance value in ohms
     signal clock_counter : INTEGER RANGE 0 TO 50000000 := 0;
     signal start_time : INTEGER := 0;
     signal end_time : INTEGER := 0;
@@ -34,6 +35,7 @@ begin
     begin
         if reset = '0' then
             reset_mode <= '1';
+            wait_mode <= '0';
             clock_counter <= 0;
             start_time <= 0;
             end_time <= 0;
@@ -46,6 +48,7 @@ begin
 
         elsif rising_edge(clk) then
             reset_mode <= '0';
+            wait_mode <= '0';
             clock_counter <= clock_counter + 1;
             
             -- Detect falling edge of start_charge signal
@@ -82,9 +85,13 @@ begin
             if capacitor_value > 1000 then
                 LED_MICRO <= '1';
                 LED_NANO <= '0';
-            else
+            elsif capacitor_value > 100 then
                 LED_MICRO <= '0';
                 LED_NANO <= '1';
+            else
+                LED_MICRO <= '0';
+                LED_NANO <= '0';
+                wait_mode <= '1';
             end if;
 
             -- Update previous states AFTER edge detection

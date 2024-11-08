@@ -8,6 +8,7 @@ ENTITY SevenSegmentDisplay IS
         clk : IN STD_LOGIC; -- Clock input for multiplexing
         input_int : IN INTEGER RANGE 0 TO 50000000; -- Integer input
         reset_mode : IN STD_LOGIC; -- Signal to trigger "rSEt" display
+        wait_mode : IN STD_LOGIC; -- Signal to trigger "wait" display
         decimal_point : IN INTEGER RANGE 0 TO 4; -- Decimal point position (0-3)
         digit1, digit2, digit3, digit4 : OUT STD_LOGIC; -- Digit control for transistors
         a, b, c, d, e, f, g, dp : OUT STD_LOGIC -- Segment outputs
@@ -90,6 +91,41 @@ BEGIN
                     END IF;
 
                     dp <= '0'; -- No decimal point in "rSEt" mode
+
+                -- Check if wait_mode is active to display "wait"
+                ELSIF wait_mode = '1' THEN
+                    CASE current_digit IS
+                        WHEN 0 => display_data <= "0101011"; -- 'w' custom pattern
+                        WHEN 1 => display_data <= "1110111"; -- 'a' custom pattern
+                        WHEN 2 => display_data <= "0010000"; -- 'i' custom pattern
+                        WHEN 3 => display_data <= "0001111"; -- 't' custom pattern
+                        WHEN OTHERS => display_data <= "0000000"; -- Blank/error
+                    END CASE;
+
+                    -- Control transistors for each digit in "wait" mode
+                    IF current_digit = 0 THEN
+                        digit1 <= '1';
+                        digit2 <= '0';
+                        digit3 <= '0';
+                        digit4 <= '0';
+                    ELSIF current_digit = 1 THEN
+                        digit1 <= '0';
+                        digit2 <= '1';
+                        digit3 <= '0';
+                        digit4 <= '0';
+                    ELSIF current_digit = 2 THEN
+                        digit1 <= '0';
+                        digit2 <= '0';
+                        digit3 <= '1';
+                        digit4 <= '0';
+                    ELSE
+                        digit1 <= '0';
+                        digit2 <= '0';
+                        digit3 <= '0';
+                        digit4 <= '1';
+                    END IF;
+
+                    dp <= '0'; -- No decimal point in "wait" mode
 
                 ELSE
                     IF input_int < 10000 THEN

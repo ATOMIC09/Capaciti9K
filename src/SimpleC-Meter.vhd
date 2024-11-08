@@ -6,7 +6,6 @@ USE ieee.std_logic_unsigned.ALL;
 
 ENTITY SimpleC_Meter IS
     PORT (
-        TEST : IN STD_LOGIC;
         RESET : IN STD_LOGIC;
         RCTRIGGER : IN STD_LOGIC; -- Feedback from RC circuit
         CLK_IN_27M : IN STD_LOGIC; -- 27MHz clock input
@@ -28,6 +27,7 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
     SIGNAL CAPACITANCE_CALCULATED : INTEGER;
     SIGNAL CAPACITANCE_CALCULATED_DP : INTEGER := 4;
     SIGNAL RESET_MODE : STD_LOGIC := '0';
+    SIGNAL WAIT_MODE : STD_LOGIC := '0';
 
     COMPONENT Gowin_rPLL
         PORT (
@@ -57,6 +57,7 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
         PORT (
             clk : IN STD_LOGIC;
             reset_mode : IN STD_LOGIC;
+            wait_mode : IN STD_LOGIC;
             input_int : IN INTEGER RANGE 0 TO 50000000;
             decimal_point : IN INTEGER RANGE 0 TO 4;
             digit1, digit2, digit3, digit4 : OUT STD_LOGIC;
@@ -74,6 +75,7 @@ ARCHITECTURE Structural OF SimpleC_Meter IS
             LED_NANO : OUT STD_LOGIC;
             display_val : OUT INTEGER;
             reset_mode : OUT STD_LOGIC;
+            wait_mode : OUT STD_LOGIC;
             decimal_point : OUT INTEGER RANGE 0 TO 4
         );
     END COMPONENT;
@@ -104,6 +106,7 @@ BEGIN
     PORT MAP(
         clk => clk_outd_pll,
         reset_mode => RESET_MODE,
+        wait_mode => WAIT_MODE,
         input_int => CAPACITANCE_CALCULATED,
         decimal_point => CAPACITANCE_CALCULATED_DP,
         digit1 => DIGIT1,
@@ -130,6 +133,7 @@ BEGIN
         LED_NANO => LED2,
         display_val => CAPACITANCE_CALCULATED,
         reset_mode => RESET_MODE,
+        wait_mode => WAIT_MODE,
         decimal_point => CAPACITANCE_CALCULATED_DP
     );
 
