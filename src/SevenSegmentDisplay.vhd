@@ -67,6 +67,12 @@ BEGIN
                 IF reset_mode = '1' THEN
                     display_data <= decode_rSEt(current_digit);
 
+                    -- Turn off all digits briefly
+                    digit1 <= '0';
+                    digit2 <= '0';
+                    digit3 <= '0';
+                    digit4 <= '0';
+
                     -- Control transistors for each digit in "rSEt" mode
                     IF current_digit = 0 THEN
                         digit1 <= '1';
@@ -94,6 +100,12 @@ BEGIN
 
                 -- Check if wait_mode is active to display "wait"
                 ELSIF wait_mode = '1' THEN
+
+                    -- Turn off all digits briefly
+                    digit1 <= '0';
+                    digit2 <= '0';
+                    digit3 <= '0';
+                    digit4 <= '0';
                     CASE current_digit IS
                         WHEN 0 => display_data <= "0101011"; -- 'w' custom pattern
                         WHEN 1 => display_data <= "1110111"; -- 'a' custom pattern
@@ -128,6 +140,11 @@ BEGIN
                     dp <= '0'; -- No decimal point in "wait" mode
 
                 ELSE
+                    -- Turn off all digits briefly
+                    digit1 <= '0';
+                    digit2 <= '0';
+                    digit3 <= '0';
+                    digit4 <= '0';
                     IF input_int < 10000 THEN
                         CASE current_digit IS
                             WHEN 3 => digit_value <= (input_int / 1000) MOD 10; -- Leftmost digit

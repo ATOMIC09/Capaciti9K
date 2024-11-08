@@ -72,20 +72,23 @@ begin
                 capacitor_value <= (time_interval / R); 
             end if;
 
+            -- Delay the 7 segment display update
+            if (clock_counter mod 5000000 = 0) then -- 0.1 second delay
             -- Convert capacitance value to microfarads
-            if capacitor_value > 1000 then
-                display_val <= capacitor_value / 1000;
-                decimal_point <= 3;
-            else
-                display_val <= capacitor_value;
-                decimal_point <= 4;
+                if capacitor_value > 1000 then
+                    display_val <= capacitor_value / 1000;
+                    decimal_point <= 3;
+                else
+                    display_val <= capacitor_value;
+                    decimal_point <= 4;
+                end if;
             end if;
 
             -- Set LED indicators based on capacitance range
             if capacitor_value > 1000 then
                 LED_MICRO <= '1';
                 LED_NANO <= '0';
-            elsif capacitor_value > 100 then
+            elsif capacitor_value > 0 then --
                 LED_MICRO <= '0';
                 LED_NANO <= '1';
             else
