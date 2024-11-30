@@ -1,4 +1,4 @@
-# CapacitiX
+# Capaciti9K
 A simple capacitance meter with FPGA and RC Comparator circuit
 
 ## Block diagram
